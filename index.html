@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Torrent to ZIP</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; background: #f4f4f9; }
+        .box { background: white; padding: 30px; border-radius: 10px; display: inline-block; box-shadow: 0px 4px 10px rgba(0,0,0,0.1); }
+        input { margin: 20px 0; }
+        #status { font-weight: bold; margin-top: 15px; color: #333; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>Конвертер Torrent в ZIP</h2>
+        <input type="file" id="torrentFile" accept=".torrent"><br>
+        <button onclick="uploadTorrent()">Скачать и упаковать</button>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        async function uploadTorrent() {
+            const fileInput = document.getElementById('torrentFile');
+            const status = document.getElementById('status');
+
+            if (fileInput.files.length === 0) {
+                alert('Выберите .torrent файл!');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('torrentFile', fileInput.files[0]);
+
+            status.innerText = 'Статус: Скачиваем торрент на сервер и пакуем в ZIP... Пожалуйста, ждите.';
+
+            try {
+                const response = await fetch('/upload-torrent', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    status.innerHTML = `Готово! <a href="${data.downloadUrl}" target="_blank">📥 Скачать ZIP архив</a>`;
+                } else {
+                    status.innerText = 'Ошибка: ' + (data.error || 'Неизвестная ошибка');
+                }
+            } catch (e) {
+                status.innerText = 'Ошибка соединения с сервером.';
+            }
+        }
+    </script>
+</body>
+</html>
